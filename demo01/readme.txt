@@ -9,11 +9,15 @@ docker logs my-prd-srv -f
 --since 5m
 docker rm -f my-prd-srv
 
-./gradlew build
-docker-compose build
+./gradlew build && docker-compose build
 docker images | grep demo01
 docker-compose up -d
+docker-compose ps
 docker-compose logs -f
 docker-compose logs -f product review
 localhost:8080/product-composite/123
 docker-compose down
+
+docker system prune -f --volumes
+docker-compose up -d --scale product=0
+docker-compose up -d --scale product=1
