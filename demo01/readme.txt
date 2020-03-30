@@ -21,3 +21,7 @@ docker-compose down
 docker system prune -f --volumes
 docker-compose up -d --scale product=0
 docker-compose up -d --scale product=1
+
+docker ps --format {{.Names}}
+
+http://localhost:8080/swagger-ui.html

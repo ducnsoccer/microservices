@@ -4,8 +4,6 @@ buildscript {
 	}
 	repositories {
 		mavenCentral()
-		maven { url "https://repo.spring.io/snapshot" }
-		maven { url "https://repo.spring.io/milestone" }
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -25,12 +23,12 @@ sourceCompatibility = 1.8
 
 repositories {
 	mavenCentral()
-	maven { url "https://repo.spring.io/snapshot" }
-	maven { url "https://repo.spring.io/milestone" }
+	maven { url 'http://oss.jfrog.org/artifactory/oss-snapshot-local/' }
 }
 
 dependencies {
 	implementation('org.springframework.boot:spring-boot-starter-webflux')
+	implementation('io.springfox:springfox-swagger2:3.0.0-SNAPSHOT')
 }
 
 dependencyManagement {
