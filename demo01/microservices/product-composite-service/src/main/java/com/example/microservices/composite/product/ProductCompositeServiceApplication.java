@@ -1,7 +1,9 @@
 package com.example.microservices.composite.product;
 
 import static java.util.Collections.emptyList;
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static springfox.documentation.builders.RequestHandlerSelectors.basePackage;
 import static springfox.documentation.spi.DocumentationType.SWAGGER_2;
 
@@ -43,7 +45,9 @@ public class ProductCompositeServiceApplication {
 				.apis(basePackage("com.example.microservices.composite.product"))
 				.paths(PathSelectors.any())
 				.build()
+                .globalResponseMessage(POST, emptyList())
                 .globalResponseMessage(GET, emptyList())
+                .globalResponseMessage(DELETE, emptyList())
 				.apiInfo(new ApiInfo(
                     apiTitle,
                     apiDescription,

@@ -9,7 +9,7 @@ docker logs my-prd-srv -f
 --since 5m
 docker rm -f my-prd-srv
 
-./gradlew build && docker-compose build
+./gradlew build && docker-compose build && docker-compose up
 docker images | grep demo01
 docker-compose up -d
 docker-compose ps
@@ -25,3 +25,13 @@ docker-compose up -d --scale product=1
 docker ps --format {{.Names}}
 
 http://localhost:8080/swagger-ui.html
+
+docker-compose exec mongodb mongo product-db --quiet --eval "db.products.find()"
+docker-compose exec mongodb mongo recommendation-db --quiet --eval "db.recommendations.find()"
+docker-compose exec mysql mysql -uuser -p review-db -e "select * from reviews"
+
+docker-compose exec mongodb mongo --quiet
+db.products.find()
+db.recommendations.find()
+docker-compose exec mysql mysql -uuser -p review-db
+select * from reviews;
