@@ -7,12 +7,21 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static springfox.documentation.builders.RequestHandlerSelectors.basePackage;
 import static springfox.documentation.spi.DocumentationType.SWAGGER_2;
 
+import java.util.LinkedHashMap;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.health.CompositeReactiveHealthIndicator;
+import org.springframework.boot.actuate.health.DefaultReactiveHealthIndicatorRegistry;
+import org.springframework.boot.actuate.health.HealthAggregator;
+import org.springframework.boot.actuate.health.ReactiveHealthIndicator;
+import org.springframework.boot.actuate.health.ReactiveHealthIndicatorRegistry;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.web.client.RestTemplate;
+
+import com.example.microservices.composite.product.services.ProductCompositeIntegration;
 
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.service.ApiInfo;
@@ -60,9 +69,21 @@ public class ProductCompositeServiceApplication {
                 ));
     }
 	
+	@Autowired
+	HealthAggregator healthAggregator;
+	
+	@Autowired
+	ProductCompositeIntegration integration;	
+	
 	@Bean
-	RestTemplate restTemplate() {
-		return new RestTemplate();
+	ReactiveHealthIndicator coreServices() {
+		ReactiveHealthIndicatorRegistry registry = new DefaultReactiveHealthIndicatorRegistry(new LinkedHashMap<>());
+
+		registry.register("product", () -> integration.getProductHealth());
+		registry.register("recommendation", () -> integration.getRecommendationHealth());
+		registry.register("review", () -> integration.getReviewHealth());
+
+		return new CompositeReactiveHealthIndicator(healthAggregator, registry);
 	}
 
 	public static void main(String[] args) {

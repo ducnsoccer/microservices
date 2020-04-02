@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import reactor.core.publisher.Mono;
+
 public interface ProductService {
 	
     /**
@@ -25,7 +27,7 @@ public interface ProductService {
      * Sample usage: curl $HOST:$PORT/product/1
      */
     @GetMapping(value = "/product/{productId}", produces = "application/json")
-     Product getProduct(@PathVariable int productId);
+    Mono<Product> getProduct(@PathVariable int productId);
     
     /**
      * Sample usage: curl -X DELETE $HOST:$PORT/product/1

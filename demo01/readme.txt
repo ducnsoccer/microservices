@@ -35,3 +35,6 @@ db.products.find()
 db.recommendations.find()
 docker-compose exec mysql mysql -uuser -p review-db
 select * from reviews;
+
+export COMPOSE_FILE=docker-compose-partitions.yml
+docker-compose build && docker-compose up -d
