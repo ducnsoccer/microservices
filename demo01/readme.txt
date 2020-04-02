@@ -38,3 +38,11 @@ select * from reviews;
 
 export COMPOSE_FILE=docker-compose-partitions.yml
 docker-compose build && docker-compose up -d
+
+docker-compose down
+unset COMPOSE_FILE
+
+docker-compose exec kafka /opt/kafka/bin/kafka-topics.sh --zookeeper zookeeper --list
+docker-compose exec kafka /opt/kafka/bin/kafka-topics.sh --describe --zookeeper zookeeper --topic products
+docker-compose exec kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic products --from-beginning --timeout-ms 1000
+docker-compose exec kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic products --from-beginning --timeout-ms 1000 --partition 1
