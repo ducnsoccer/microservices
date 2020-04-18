@@ -18,8 +18,10 @@ import org.springframework.boot.actuate.health.HealthAggregator;
 import org.springframework.boot.actuate.health.ReactiveHealthIndicator;
 import org.springframework.boot.actuate.health.ReactiveHealthIndicatorRegistry;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.example.microservices.composite.product.services.ProductCompositeIntegration;
 
@@ -84,6 +86,13 @@ public class ProductCompositeServiceApplication {
 		registry.register("review", () -> integration.getReviewHealth());
 
 		return new CompositeReactiveHealthIndicator(healthAggregator, registry);
+	}
+
+	@Bean
+	@LoadBalanced
+	public WebClient.Builder loadBalancedWebClientBuilder() {
+		final WebClient.Builder builder = WebClient.builder();
+		return builder;
 	}
 
 	public static void main(String[] args) {
