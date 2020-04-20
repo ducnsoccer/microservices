@@ -7,7 +7,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static springfox.documentation.builders.RequestHandlerSelectors.basePackage;
 import static springfox.documentation.spi.DocumentationType.SWAGGER_2;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,8 +14,6 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import com.example.microservices.composite.product.services.ProductCompositeIntegration;
 
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.service.ApiInfo;
@@ -63,9 +60,6 @@ public class ProductCompositeServiceApplication {
                     emptyList()
                 ));
     }
-	
-	@Autowired
-	ProductCompositeIntegration integration;	
 	
 	@Bean
 	@LoadBalanced
