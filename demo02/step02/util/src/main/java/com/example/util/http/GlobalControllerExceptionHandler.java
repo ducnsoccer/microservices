@@ -24,14 +24,12 @@ class GlobalControllerExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     public @ResponseBody
     HttpErrorInfo handleNotFoundExceptions(ServerHttpRequest request, Exception ex) {
-
         return createHttpErrorInfo(NOT_FOUND, request, ex);
     }
 
     @ResponseStatus(UNPROCESSABLE_ENTITY)
     @ExceptionHandler(InvalidInputException.class)
     public @ResponseBody HttpErrorInfo handleInvalidInputException(ServerHttpRequest request, Exception ex) {
-
         return createHttpErrorInfo(UNPROCESSABLE_ENTITY, request, ex);
     }
 
