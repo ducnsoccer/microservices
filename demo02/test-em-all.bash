@@ -97,6 +97,8 @@ fi
 
 waitForService http://$HOST:$PORT/product-composite/1
 
+sleep 5
+
 # Verify that a normal request works, expect three recommendations and three reviews
 assertCurl 200 "curl http://$HOST:$PORT/product-composite/1 -s"
 assertEqual 1 $(echo $RESPONSE | jq .productId)
