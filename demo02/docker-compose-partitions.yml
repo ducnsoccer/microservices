@@ -6,88 +6,84 @@ services:
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MANAGEMENT_HEALTH_RABBIT_ENABLED=false
-      - SPRING_CLOUD_STREAM_DEFAULTBINDER=kafka
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_PARTITIONED=true
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCECOUNT=2
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCEINDEX=0
     depends_on:
-      - kafka
-      - mongodb
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   product-p1:
     build: microservices/product-service
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MANAGEMENT_HEALTH_RABBIT_ENABLED=false
-      - SPRING_CLOUD_STREAM_DEFAULTBINDER=kafka
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_PARTITIONED=true
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCECOUNT=2
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCEINDEX=1
     depends_on:
-      - kafka
-      - mongodb
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   recommendation:
     build: microservices/recommendation-service
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MANAGEMENT_HEALTH_RABBIT_ENABLED=false
-      - SPRING_CLOUD_STREAM_DEFAULTBINDER=kafka
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_PARTITIONED=true
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCECOUNT=2
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCEINDEX=0
     depends_on:
-      - kafka
-      - mongodb
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   recommendation-p1:
     build: microservices/recommendation-service
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MANAGEMENT_HEALTH_RABBIT_ENABLED=false
-      - SPRING_CLOUD_STREAM_DEFAULTBINDER=kafka
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_PARTITIONED=true
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCECOUNT=2
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCEINDEX=1
     depends_on:
-      - kafka
-      - mongodb
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   review:
     build: microservices/review-service
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MANAGEMENT_HEALTH_RABBIT_ENABLED=false
-      - SPRING_CLOUD_STREAM_DEFAULTBINDER=kafka
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_PARTITIONED=true
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCECOUNT=2
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCEINDEX=0
     depends_on:
       mysql:
         condition: service_healthy
-      kafka:
-        condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
   review-p1:
     build: microservices/review-service
     mem_limit: 350m
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MANAGEMENT_HEALTH_RABBIT_ENABLED=false
-      - SPRING_CLOUD_STREAM_DEFAULTBINDER=kafka
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_PARTITIONED=true
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCECOUNT=2
       - SPRING_CLOUD_STREAM_BINDINGS_INPUT_CONSUMER_INSTANCEINDEX=1
     depends_on:
       mysql:
         condition: service_healthy
-      kafka:
-        condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
   product-composite:
     build: microservices/product-composite-service
@@ -96,8 +92,6 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - MANAGEMENT_HEALTH_RABBIT_ENABLED=false
-      - SPRING_CLOUD_STREAM_DEFAULTBINDER=kafka
       - SPRING_CLOUD_STREAM_BINDINGS_OUTPUT-PRODUCTS_PRODUCER_PARTITION-KEY-EXPRESSION=payload.key
       - SPRING_CLOUD_STREAM_BINDINGS_OUTPUT-PRODUCTS_PRODUCER_PARTITION-COUNT=2
       - SPRING_CLOUD_STREAM_BINDINGS_OUTPUT-RECOMMENDATIONS_PRODUCER_PARTITION-KEY-EXPRESSION=payload.key
@@ -105,7 +99,8 @@ services:
       - SPRING_CLOUD_STREAM_BINDINGS_OUTPUT-REVIEWS_PRODUCER_PARTITION-KEY-EXPRESSION=payload.key
       - SPRING_CLOUD_STREAM_BINDINGS_OUTPUT-REVIEWS_PRODUCER_PARTITION-COUNT=2
     depends_on:
-      - kafka
+      rabbitmq:
+        condition: service_healthy
 
   # $ mongo
   mongodb:
@@ -114,6 +109,11 @@ services:
     ports:
       - "27017:27017"
     command: mongod --smallfiles
+    healthcheck:
+      test: "mongo --eval 'db.stats().ok'"
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   # $ mysql -uroot -h127.0.0.1 -p
   mysql:
@@ -132,22 +132,14 @@ services:
       timeout: 5s
       retries: 10
 
-  kafka:
-    image: wurstmeister/kafka:2.12-2.1.0
+  rabbitmq:
+    image: rabbitmq:3.7.8-management
     mem_limit: 350m
     ports:
-      - "9092:9092"
-    environment:
-      - KAFKA_ADVERTISED_HOST_NAME=kafka
-      - KAFKA_ADVERTISED_PORT=9092
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-    depends_on:
-      - zookeeper
-
-  zookeeper:
-    image: wurstmeister/zookeeper:3.4.6
-    mem_limit: 350m
-    ports:
-      - "2181:2181"
-    environment:
-      - KAFKA_ADVERTISED_HOST_NAME=zookeeper
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 10

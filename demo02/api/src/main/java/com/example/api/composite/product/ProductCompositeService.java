@@ -6,13 +6,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import reactor.core.publisher.Mono;
+
 public interface ProductCompositeService {
 	
 	@PostMapping(value = "/product-composite", consumes = "application/json")
 	void createCompositeProduct(@RequestBody ProductAggregate body);
 
 	@GetMapping(value = "/product-composite/{productId}", produces = "application/json")
-	ProductAggregate getCompositeProduct(@PathVariable int productId);
+	Mono<ProductAggregate> getCompositeProduct(@PathVariable int productId);
 	
     @DeleteMapping(value = "/product-composite/{productId}")
     void deleteCompositeProduct(@PathVariable int productId);

@@ -1,7 +1,11 @@
 package com.example.microservices.core.review.services;
 
-import java.util.List;
+import static java.util.logging.Level.FINE;
 
+import java.util.List;
+import java.util.function.Supplier;
+
+import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +19,9 @@ import com.example.microservices.core.review.persistence.ReviewRepository;
 import com.example.util.exceptions.InvalidInputException;
 import com.example.util.http.ServiceUtil;
 
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Scheduler;
+
 @RestController
 public class ReviewServiceImpl implements ReviewService {
 
@@ -25,9 +32,12 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper mapper;
 
     private final ServiceUtil serviceUtil;
+    
+    private final Scheduler scheduler;
 
     @Autowired
-    public ReviewServiceImpl(ReviewRepository repository, ReviewMapper mapper, ServiceUtil serviceUtil) {
+    public ReviewServiceImpl(Scheduler scheduler, ReviewRepository repository, ReviewMapper mapper, ServiceUtil serviceUtil) {
+    	this.scheduler = scheduler;
         this.repository = repository;
         this.mapper = mapper;
         this.serviceUtil = serviceUtil;
@@ -35,6 +45,8 @@ public class ReviewServiceImpl implements ReviewService {
 
 	@Override
 	public Review createReview(Review body) {
+		if (body.getProductId() < 1) throw new InvalidInputException("Invalid productId: " + body.getProductId());
+		
 		try {
 			ReviewEntity entity = mapper.apiToEntity(body);
 			ReviewEntity newEntity = repository.save(entity);
@@ -47,23 +59,34 @@ public class ReviewServiceImpl implements ReviewService {
 		}
 	}
 
+    @Override
+    public Flux<Review> getReviews(int productId) {
+        if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
+
+        LOG.info("Will get reviews for product with id={}", productId);
+
+        return asyncFlux(() -> Flux.fromIterable(getByProductId(productId))).log(null, FINE);
+    }
+
+    protected List<Review> getByProductId(int productId) {
+        List<ReviewEntity> entityList = repository.findByProductId(productId);
+        List<Review> list = mapper.entityListToApiList(entityList);
+        list.forEach(e -> e.setServiceAddress(serviceUtil.getServiceAddress()));
+
+        LOG.debug("getReviews: response size: {}", list.size());
+
+        return list;
+    }
+
 	@Override
-	public List<Review> getReviews(int productId) {
+    public void deleteReviews(int productId) {
+        if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
 
-		if (productId < 1) throw new InvalidInputException("Invalid productId: " + productId);
+        LOG.debug("deleteReviews: tries to delete reviews for the product with productId: {}", productId);
+        repository.deleteAll(repository.findByProductId(productId));
+    }
 
-		List<ReviewEntity> entityList = repository.findByProductId(productId);
-		List<Review> list = mapper.entityListToApiList(entityList);
-		list.forEach(e -> e.setServiceAddress(serviceUtil.getServiceAddress()));
-
-		LOG.debug("getReviews: response size: {}", list.size());
-
-		return list;
-	}
-
-	@Override
-	public void deleteReviews(int productId) {
-		LOG.debug("deleteReviews: tries to delete reviews for the product with productId: {}", productId);
-		repository.deleteAll(repository.findByProductId(productId));
-	}
+    private <T> Flux<T> asyncFlux(Supplier<Publisher<T>> publisherSupplier) {
+        return Flux.defer(publisherSupplier).subscribeOn(scheduler);
+    }
 }

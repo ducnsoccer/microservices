@@ -1,5 +1,7 @@
 package com.example.microservices.core.review.persistence;
 
+import static java.lang.String.format;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -35,6 +37,11 @@ public class ReviewEntity {
 		this.content = content;
 	}
 
+    @Override
+    public String toString() {
+        return format("ReviewEntity: %s/%d", productId, reviewId);
+    }
+    
 	public int getId() {
 		return id;
 	}
