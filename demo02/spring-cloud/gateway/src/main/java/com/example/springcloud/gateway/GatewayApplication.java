@@ -1,21 +1,13 @@
-package com.example.microservices.composite.product;
+package com.example.springcloud.gateway;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.example.microservices.composite.product.services.ProductCompositeIntegration;
-
 @SpringBootApplication
-@ComponentScan("com.example")
-public class ProductCompositeServiceApplication {
-
-	@Autowired
-	ProductCompositeIntegration integration;
+public class GatewayApplication {
 
 	@Bean
 	@LoadBalanced
@@ -25,6 +17,6 @@ public class ProductCompositeServiceApplication {
 	}
 
 	public static void main(String[] args) {
-		SpringApplication.run(ProductCompositeServiceApplication.class, args);
+		SpringApplication.run(GatewayApplication.class, args);
 	}
 }
