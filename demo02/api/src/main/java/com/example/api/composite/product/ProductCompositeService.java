@@ -11,11 +11,11 @@ import reactor.core.publisher.Mono;
 public interface ProductCompositeService {
 	
 	@PostMapping(value = "/product-composite", consumes = "application/json")
-	void createCompositeProduct(@RequestBody ProductAggregate body);
+	Mono<Void> createCompositeProduct(@RequestBody ProductAggregate body);
 
 	@GetMapping(value = "/product-composite/{productId}", produces = "application/json")
 	Mono<ProductAggregate> getCompositeProduct(@PathVariable int productId);
 	
     @DeleteMapping(value = "/product-composite/{productId}")
-    void deleteCompositeProduct(@PathVariable int productId);
+    Mono<Void> deleteCompositeProduct(@PathVariable int productId);
 }
