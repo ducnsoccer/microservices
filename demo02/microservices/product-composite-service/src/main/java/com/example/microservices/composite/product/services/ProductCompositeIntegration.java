@@ -5,10 +5,12 @@ import static com.example.api.event.Event.Type.DELETE;
 import static reactor.core.publisher.Flux.empty;
 
 import java.io.IOException;
+import java.net.URI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.messaging.MessageChannel;
@@ -16,6 +18,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.example.api.core.product.Product;
 import com.example.api.core.product.ProductService;
@@ -47,7 +50,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
     private WebClient webClient;
 
-    private MessageSources messageSources;
+    private final MessageSources messageSources;
 
     public interface MessageSources {
 
@@ -83,10 +86,12 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
 	@Override
     public Mono<Product> getProduct(int productId) {
-        String url = productServiceUrl + "/product/" + productId;
+		URI url = UriComponentsBuilder.fromUriString(productServiceUrl + "/product/{productId}").build(productId);
         LOG.debug("Will call the getProduct API on URL: {}", url);
 
-        return getWebClient().get().uri(url).retrieve().bodyToMono(Product.class).log().onErrorMap(WebClientResponseException.class, ex -> handleException(ex));
+        return getWebClient().get().uri(url)
+                .retrieve().bodyToMono(Product.class).log()
+                .onErrorMap(WebClientResponseException.class, ex -> handleException(ex));
 	}
 
 	@Override
@@ -102,7 +107,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
 	@Override
     public Flux<Recommendation> getRecommendations(int productId) {
-        String url = recommendationServiceUrl + "/recommendation?productId=" + productId;
+		URI url = UriComponentsBuilder.fromUriString(recommendationServiceUrl + "/recommendation?productId={productId}").build(productId);
 
         LOG.debug("Will call the getRecommendations API on URL: {}", url);
 
@@ -124,7 +129,7 @@ public class ProductCompositeIntegration implements ProductService, Recommendati
 
     @Override
     public Flux<Review> getReviews(int productId) {
-        String url = reviewServiceUrl + "/review?productId=" + productId;
+    	URI url = UriComponentsBuilder.fromUriString(reviewServiceUrl + "/review?productId={productId}").build(productId);
 
         LOG.debug("Will call the getReviews API on URL: {}", url);
 
